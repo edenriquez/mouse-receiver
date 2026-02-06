@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/master.swiftdeps"
+  },
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareShared/Models.swift": {
+    "dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/Models.d",
+    "object": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/Models.swift.o",
+    "swiftmodule": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/Models~partial.swiftmodule",
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/Models.swiftdeps"
+  }
+}

@@ -1,0 +1,4 @@
+module InputShareTransport {
+    header "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/InputShareTransport-Swift.h"
+    requires objc
+}

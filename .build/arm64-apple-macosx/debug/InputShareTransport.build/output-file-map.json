@@ -1,0 +1,23 @@
+{
+  "": {
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/master.swiftdeps"
+  },
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/Framing.swift": {
+    "dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/Framing.d",
+    "object": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/Framing.swift.o",
+    "swiftmodule": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/Framing~partial.swiftmodule",
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/Framing.swiftdeps"
+  },
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/NWFramedConnection.swift": {
+    "dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWFramedConnection.d",
+    "object": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWFramedConnection.swift.o",
+    "swiftmodule": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWFramedConnection~partial.swiftmodule",
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWFramedConnection.swiftdeps"
+  },
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/NWTransport.swift": {
+    "dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWTransport.d",
+    "object": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWTransport.swift.o",
+    "swiftmodule": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWTransport~partial.swiftmodule",
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWTransport.swiftdeps"
+  }
+}

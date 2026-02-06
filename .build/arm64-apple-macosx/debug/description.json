@@ -1,0 +1,877 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.InputShareCapture-debug.module" : {
+      "executable" : "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "fileList" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/sources",
+      "importPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/EventTapCapture.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/ScreenGeometry.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "InputShareCapture",
+      "moduleOutputPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.swiftmodule",
+      "objects" : [
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/EventTapCapture.swift.o",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/ScreenGeometry.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx12.0",
+        "-swift-version",
+        "5",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/InputShareCapture-Swift.h",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "mouse"
+      ],
+      "outputFileMapPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/EventTapCapture.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/ScreenGeometry.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.swiftmodule"
+        }
+      ],
+      "sources" : [
+        "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/EventTapCapture.swift",
+        "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/ScreenGeometry.swift"
+      ],
+      "tempsPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.InputShareCLI-debug.module" : {
+      "executable" : "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "fileList" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/sources",
+      "importPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCLI/main.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "InputShareCLI",
+      "moduleOutputPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.swiftmodule",
+      "objects" : [
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/main.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx12.0",
+        "-swift-version",
+        "5",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "InputShareCLI_main",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "mouse"
+      ],
+      "outputFileMapPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.swiftmodule"
+        }
+      ],
+      "sources" : [
+        "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCLI/main.swift"
+      ],
+      "tempsPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.InputShareInjection-debug.module" : {
+      "executable" : "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "fileList" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/sources",
+      "importPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareInjection/InputInjection.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "InputShareInjection",
+      "moduleOutputPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.swiftmodule",
+      "objects" : [
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/InputInjection.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx12.0",
+        "-swift-version",
+        "5",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/InputShareInjection-Swift.h",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "mouse"
+      ],
+      "outputFileMapPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/InputInjection.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.swiftmodule"
+        }
+      ],
+      "sources" : [
+        "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareInjection/InputInjection.swift"
+      ],
+      "tempsPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.InputShareShared-debug.module" : {
+      "executable" : "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "fileList" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/sources",
+      "importPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareShared/Models.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "InputShareShared",
+      "moduleOutputPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.swiftmodule",
+      "objects" : [
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/Models.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx12.0",
+        "-swift-version",
+        "5",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/InputShareShared-Swift.h",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "mouse"
+      ],
+      "outputFileMapPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/Models.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.swiftmodule"
+        }
+      ],
+      "sources" : [
+        "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareShared/Models.swift"
+      ],
+      "tempsPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.InputShareTransport-debug.module" : {
+      "executable" : "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "fileList" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/sources",
+      "importPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/Framing.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/NWFramedConnection.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/NWTransport.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "InputShareTransport",
+      "moduleOutputPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.swiftmodule",
+      "objects" : [
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/Framing.swift.o",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWFramedConnection.swift.o",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWTransport.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx12.0",
+        "-swift-version",
+        "5",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j8",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/InputShareTransport-Swift.h",
+        "-sdk",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "mouse"
+      ],
+      "outputFileMapPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/Framing.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWFramedConnection.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWTransport.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.swiftmodule"
+        }
+      ],
+      "sources" : [
+        "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/Framing.swift",
+        "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/NWFramedConnection.swift",
+        "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/NWTransport.swift"
+      ],
+      "tempsPath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "InputShareCapture" : [
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "-module-name",
+      "InputShareCapture",
+      "-package-name",
+      "mouse",
+      "-incremental",
+      "-c",
+      "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/EventTapCapture.swift",
+      "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/ScreenGeometry.swift",
+      "-I",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug",
+      "-target",
+      "arm64-apple-macosx12.0",
+      "-swift-version",
+      "5",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/InputShareCapture-Swift.h",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "mouse",
+      "-driver-use-frontend-path",
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc"
+    ],
+    "InputShareCLI" : [
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "-module-name",
+      "InputShareCLI",
+      "-package-name",
+      "mouse",
+      "-incremental",
+      "-c",
+      "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCLI/main.swift",
+      "-I",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug",
+      "-target",
+      "arm64-apple-macosx12.0",
+      "-swift-version",
+      "5",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "InputShareCLI_main",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "mouse",
+      "-driver-use-frontend-path",
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc"
+    ],
+    "InputShareInjection" : [
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "-module-name",
+      "InputShareInjection",
+      "-package-name",
+      "mouse",
+      "-incremental",
+      "-c",
+      "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareInjection/InputInjection.swift",
+      "-I",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug",
+      "-target",
+      "arm64-apple-macosx12.0",
+      "-swift-version",
+      "5",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/InputShareInjection-Swift.h",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "mouse",
+      "-driver-use-frontend-path",
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc"
+    ],
+    "InputShareShared" : [
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "-module-name",
+      "InputShareShared",
+      "-package-name",
+      "mouse",
+      "-incremental",
+      "-c",
+      "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareShared/Models.swift",
+      "-I",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug",
+      "-target",
+      "arm64-apple-macosx12.0",
+      "-swift-version",
+      "5",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/InputShareShared-Swift.h",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "mouse",
+      "-driver-use-frontend-path",
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc"
+    ],
+    "InputShareTransport" : [
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc",
+      "-module-name",
+      "InputShareTransport",
+      "-package-name",
+      "mouse",
+      "-incremental",
+      "-c",
+      "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/Framing.swift",
+      "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/NWFramedConnection.swift",
+      "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/NWTransport.swift",
+      "-I",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug",
+      "-target",
+      "arm64-apple-macosx12.0",
+      "-swift-version",
+      "5",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j8",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/InputShareTransport-Swift.h",
+      "-sdk",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "mouse",
+      "-driver-use-frontend-path",
+      "/Library/Developer/CommandLineTools/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "InputShareCapture" : [
+      "InputShareShared"
+    ],
+    "InputShareCLI" : [
+      "InputShareInjection",
+      "InputShareCapture",
+      "InputShareTransport",
+      "InputShareShared"
+    ],
+    "InputShareInjection" : [
+      "InputShareCapture",
+      "InputShareShared"
+    ],
+    "InputShareShared" : [
+
+    ],
+    "InputShareTransport" : [
+      "InputShareShared"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "writeCommands" : {
+    "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/inputshare-entitlement.plist" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<entitlement-plist>"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<com.apple.security.get-task-allow>"
+        }
+      ],
+      "outputFilePath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/inputshare-entitlement.plist"
+    },
+    "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/inputshare.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/EventTapCapture.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/ScreenGeometry.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/InputInjection.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/Models.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/Framing.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWFramedConnection.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/NWTransport.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/inputshare.product/Objects.LinkFileList"
+    },
+    "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/EventTapCapture.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/ScreenGeometry.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/sources"
+    },
+    "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCLI/main.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/sources"
+    },
+    "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareInjection/InputInjection.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/sources"
+    },
+    "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareShared/Models.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareShared.build/sources"
+    },
+    "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/Framing.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/NWFramedConnection.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/NWTransport.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareTransport.build/sources"
+    },
+    "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Library/Developer/CommandLineTools/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/swift-version--1AB21518FC5DEDBE.txt"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/master.swiftdeps"
+  },
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareInjection/InputInjection.swift": {
+    "dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/InputInjection.d",
+    "object": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/InputInjection.swift.o",
+    "swiftmodule": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/InputInjection~partial.swiftmodule",
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/InputInjection.swiftdeps"
+  }
+}

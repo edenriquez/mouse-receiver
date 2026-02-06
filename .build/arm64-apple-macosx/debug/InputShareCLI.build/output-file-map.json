@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/master.swiftdeps"
+  },
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCLI/main.swift": {
+    "dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/main.d",
+    "object": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/main.swift.o",
+    "swiftmodule": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCLI.build/main.swiftdeps"
+  }
+}

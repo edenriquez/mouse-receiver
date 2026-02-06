@@ -1,0 +1,4 @@
+module InputShareCapture {
+    header "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/InputShareCapture-Swift.h"
+    requires objc
+}

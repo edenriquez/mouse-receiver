@@ -1,0 +1,4 @@
+module InputShareInjection {
+    header "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareInjection.build/InputShareInjection-Swift.h"
+    requires objc
+}

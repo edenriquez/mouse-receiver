@@ -1,0 +1,5 @@
+version: "Apple Swift version 5.10 (swiftlang-5.10.0.13 clang-1500.3.9.4)"
+options: "2150bd77a3f263a384afa457e62393b5"
+build_time: [1770347031, 131047000]
+inputs:
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCLI/main.swift": [1768953091, 62125541]

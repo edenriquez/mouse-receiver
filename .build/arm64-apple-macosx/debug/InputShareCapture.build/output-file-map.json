@@ -1,0 +1,17 @@
+{
+  "": {
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/master.swiftdeps"
+  },
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/EventTapCapture.swift": {
+    "dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/EventTapCapture.d",
+    "object": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/EventTapCapture.swift.o",
+    "swiftmodule": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/EventTapCapture~partial.swiftmodule",
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/EventTapCapture.swiftdeps"
+  },
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/ScreenGeometry.swift": {
+    "dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/ScreenGeometry.d",
+    "object": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/ScreenGeometry.swift.o",
+    "swiftmodule": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/ScreenGeometry~partial.swiftmodule",
+    "swift-dependencies": "/Users/eduardoenriquez/dev/github/mouse/.build/arm64-apple-macosx/debug/InputShareCapture.build/ScreenGeometry.swiftdeps"
+  }
+}
