@@ -35,11 +35,13 @@ public final class EventTapCapture {
         pinPoint = CGPoint(x: geometry.bounds.midX, y: geometry.bounds.midY)
         isSuppressing = true
         CGAssociateMouseAndMouseCursorPosition(0)
-        CGWarpMouseCursorPosition(pinPoint)
         if hideCursor {
+            // Sender: pin cursor to center and hide it
+            CGWarpMouseCursorPosition(pinPoint)
             CGDisplayHideCursor(CGMainDisplayID())
             cursorHidden = true
         }
+        // Receiver: cursor stays visible at current position, controlled by injector
     }
 
     /// Stop suppressing: restore HID association and show cursor if it was hidden.
@@ -109,8 +111,12 @@ public final class EventTapCapture {
 
                 unmanagedSelf.handle(event: event, type: type)
 
-                // Warp real cursor back to center — reliable way to pin it
-                CGWarpMouseCursorPosition(unmanagedSelf.pinPoint)
+                // Only warp cursor to center on sender (cursor hidden).
+                // On receiver the cursor is visible and controlled by the injector —
+                // warping here would fight with injected positions.
+                if unmanagedSelf.cursorHidden {
+                    CGWarpMouseCursorPosition(unmanagedSelf.pinPoint)
+                }
 
                 // Swallow the event so apps don't see it
                 return nil
