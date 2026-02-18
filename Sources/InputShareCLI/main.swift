@@ -187,8 +187,15 @@ if args.mode == "receive" {
 
             switch env.messageType {
             case .activate:
-                print("[Receiver] Received activate — now injecting")
+                print("[Receiver] Received activate — warping to top-left, now injecting")
                 isInjecting = true
+
+                // Place cursor at top-left
+                CGWarpMouseCursorPosition(CGPoint(x: 20, y: 20))
+                CGAssociateMouseAndMouseCursorPosition(1)
+                // Arm return edge — must leave corner before return can trigger
+                returnEdge.armAfterEntry()
+
                 let ack = MessageEnvelope(
                     protocolVersion: InputShareCodec.protocolVersion,
                     messageType: .activated,
@@ -239,6 +246,7 @@ let conn = NWTransport.makeClientConnection(host: args.host!, port: args.port)
 let framed = NWFramedConnection(connection: conn, queue: queue)
 
 let geometry = ScreenGeometry.mainDisplay()
+print("[Sender] Screen bounds: \(geometry.bounds)")
 let edgeDetector = EdgeDetector(
     trigger: EdgeTrigger(zone: .topRight),
     screenWidth: geometry.bounds.width,
@@ -253,9 +261,15 @@ stateMachine.onStateChange = { newState in
     print("[Sender] State: \(newState.rawValue)")
     switch newState {
     case .forwarding:
-        capture.isSuppressing = true
+        capture.startSuppressing(virtualStart: CGPoint(x: 20, y: 20))
     case .idle:
-        capture.isSuppressing = false
+        let wasSuppressing = capture.isSuppressing
+        capture.stopSuppressing()
+        if wasSuppressing {
+            let geo = ScreenGeometry.mainDisplay()
+            CGWarpMouseCursorPosition(CGPoint(x: geo.bounds.width - 20, y: 20))
+            edgeDetector.armAfterEntry()
+        }
     default:
         break
     }

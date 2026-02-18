@@ -1,5 +1,5 @@
 version: "Apple Swift version 5.10 (swiftlang-5.10.0.13 clang-1500.3.9.4)"
-options: "8ea84f6405001a83dd1b6f96e525da34"
-build_time: [1770355199, 607087000]
+options: "c43ecf8eb32c789e044bb94aac80f555"
+build_time: [1771390146, 279541000]
 inputs:
-  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareShared/Models.swift": [1768953360, 873640441]
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareShared/Models.swift": [1771388322, 770423060]

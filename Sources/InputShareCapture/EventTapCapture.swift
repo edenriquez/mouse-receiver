@@ -11,11 +11,32 @@ public final class EventTapCapture {
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
-    /// When true, the event tap callback returns nil to swallow events locally
-    public var isSuppressing: Bool = false
+    /// True when cursor is frozen/hidden and events are swallowed locally.
+    public private(set) var isSuppressing: Bool = false
 
-    /// Fires raw screen position on every mouse move before normalization
+    /// Fires raw screen position on every mouse move before normalization.
+    /// When suppressing, this fires the virtual cursor position.
     public var onRawMouseMove: ((CGPoint) -> Void)?
+
+    /// Virtual cursor position tracked via deltas when suppressing
+    private var virtualPosition: CGPoint = .zero
+
+    /// Begin suppressing: freeze + hide real cursor, track virtual cursor from `virtualStart`.
+    public func startSuppressing(virtualStart: CGPoint) {
+        guard !isSuppressing else { return }
+        virtualPosition = virtualStart
+        isSuppressing = true
+        CGAssociateMouseAndMouseCursorPosition(0)
+        CGDisplayHideCursor(CGMainDisplayID())
+    }
+
+    /// Stop suppressing: show real cursor and reconnect to HID.
+    public func stopSuppressing() {
+        guard isSuppressing else { return }
+        isSuppressing = false
+        CGDisplayShowCursor(CGMainDisplayID())
+        CGAssociateMouseAndMouseCursorPosition(1)
+    }
 
     public init(handler: @escaping Handler, queue: DispatchQueue = DispatchQueue(label: "inputshare.capture"), geometry: ScreenGeometry = .mainDisplay()) {
         self.handler = handler
@@ -60,12 +81,24 @@ public final class EventTapCapture {
 
             // Fire raw mouse position before any processing
             if type == .mouseMoved {
-                unmanagedSelf.onRawMouseMove?(event.location)
+                if unmanagedSelf.isSuppressing {
+                    // Track virtual cursor via deltas while real cursor is frozen
+                    let dx = CGFloat(event.getDoubleValueField(.mouseEventDeltaX))
+                    let dy = CGFloat(event.getDoubleValueField(.mouseEventDeltaY))
+                    unmanagedSelf.virtualPosition.x += dx
+                    unmanagedSelf.virtualPosition.y += dy
+                    // Clamp to screen bounds
+                    unmanagedSelf.virtualPosition.x = max(0, min(unmanagedSelf.virtualPosition.x, unmanagedSelf.geometry.bounds.width))
+                    unmanagedSelf.virtualPosition.y = max(0, min(unmanagedSelf.virtualPosition.y, unmanagedSelf.geometry.bounds.height))
+                    unmanagedSelf.onRawMouseMove?(unmanagedSelf.virtualPosition)
+                } else {
+                    unmanagedSelf.onRawMouseMove?(event.location)
+                }
             }
 
             unmanagedSelf.handle(event: event, type: type)
 
-            // When suppressing, swallow the event to prevent local cursor movement
+            // When suppressing, swallow the event
             if unmanagedSelf.isSuppressing {
                 return nil
             }
@@ -91,6 +124,9 @@ public final class EventTapCapture {
     }
 
     public func stop() {
+        if isSuppressing {
+            stopSuppressing()
+        }
         if let source = runLoopSource {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
         }
@@ -103,7 +139,12 @@ public final class EventTapCapture {
 
         switch type {
         case .mouseMoved:
-            let loc = event.location
+            let loc: CGPoint
+            if isSuppressing {
+                loc = virtualPosition
+            } else {
+                loc = event.location
+            }
             let n = geometry.normalize(point: loc)
             let e = InputEvent(kind: .mouseMove, normalizedPosition: NormalizedPoint(x: n.x, y: n.y), flags: flags)
             queue.async { self.handler(e) }

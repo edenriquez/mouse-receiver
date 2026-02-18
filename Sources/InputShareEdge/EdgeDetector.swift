@@ -63,6 +63,15 @@ public final class EdgeDetector: @unchecked Sendable {
         }
     }
 
+    /// Mark the detector as "already in zone" so the cursor must leave and
+    /// re-enter before the next trigger fires. Call this after warping the
+    /// cursor near the corner to prevent an immediate re-trigger.
+    public func armAfterEntry() {
+        isInZone = true
+        hasTriggered = false
+        cancelDwellTimer()
+    }
+
     private func isInsideEnterZone(_ pos: CGPoint) -> Bool {
         let t = trigger.enterThreshold
         switch trigger.zone {
