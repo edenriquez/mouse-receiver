@@ -1,5 +1,5 @@
 version: "Apple Swift version 5.10 (swiftlang-5.10.0.13 clang-1500.3.9.4)"
-options: "1aa7caed6e6fa855698f13721e6d14e7"
-build_time: [1770355199, 700308000]
+options: "3842e5a55a8cb76056c705e7ae002877"
+build_time: [1771388335, 720552000]
 inputs:
-  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareInjection/InputInjection.swift": [1768953189, 57540836]
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareInjection/InputInjection.swift": [1771388060, 43174259]

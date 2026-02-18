@@ -1,6 +1,6 @@
 version: "Apple Swift version 5.10 (swiftlang-5.10.0.13 clang-1500.3.9.4)"
-options: "ea67415e1942198e6de7e3b39b78f841"
-build_time: [1770355199, 656163000]
+options: "00f593ca29e0fab2b5568f855285e2df"
+build_time: [1771388334, 772245000]
 inputs:
-  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/EventTapCapture.swift": [1768953479, 882600300]
-  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/ScreenGeometry.swift": [1768953059, 993318561]
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/EventTapCapture.swift": [1771388149, 176133375]
+  "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareCapture/ScreenGeometry.swift": [1771388060, 41967417]

@@ -11,6 +11,12 @@ public final class EventTapCapture {
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
 
+    /// When true, the event tap callback returns nil to swallow events locally
+    public var isSuppressing: Bool = false
+
+    /// Fires raw screen position on every mouse move before normalization
+    public var onRawMouseMove: ((CGPoint) -> Void)?
+
     public init(handler: @escaping Handler, queue: DispatchQueue = DispatchQueue(label: "inputshare.capture"), geometry: ScreenGeometry = .mainDisplay()) {
         self.handler = handler
         self.queue = queue
@@ -52,7 +58,17 @@ public final class EventTapCapture {
                 return Unmanaged.passUnretained(event)
             }
 
+            // Fire raw mouse position before any processing
+            if type == .mouseMoved {
+                unmanagedSelf.onRawMouseMove?(event.location)
+            }
+
             unmanagedSelf.handle(event: event, type: type)
+
+            // When suppressing, swallow the event to prevent local cursor movement
+            if unmanagedSelf.isSuppressing {
+                return nil
+            }
             return Unmanaged.passUnretained(event)
         }
 

@@ -1,6 +1,6 @@
 version: "Apple Swift version 5.10 (swiftlang-5.10.0.13 clang-1500.3.9.4)"
 options: "87ee57d28c1424be791abc09d92c6396"
-build_time: [1770355154, 837418000]
+build_time: [1770355199, 656157000]
 inputs:
   "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/Framing.swift": [1768953042, 816685097]
   "/Users/eduardoenriquez/dev/github/mouse/Sources/InputShareTransport/NWFramedConnection.swift": [1768953047, 790006957]

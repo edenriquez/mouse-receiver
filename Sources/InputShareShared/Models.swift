@@ -11,6 +11,8 @@ public enum InputShareMessageType: String, Codable, Sendable {
     case activated
     case deactivate
     case deactivated
+    case pairRequest
+    case pairAccept
 }
 
 public struct MessageEnvelope: Codable, Sendable {
@@ -113,6 +115,26 @@ public struct ActivatePayload: Codable, Sendable {
 
     public init(normalizedPosition: NormalizedPoint) {
         self.normalizedPosition = normalizedPosition
+    }
+}
+
+public struct PairRequestPayload: Codable, Sendable {
+    public var deviceName: String
+    public var deviceId: String
+
+    public init(deviceName: String, deviceId: String) {
+        self.deviceName = deviceName
+        self.deviceId = deviceId
+    }
+}
+
+public struct PairAcceptPayload: Codable, Sendable {
+    public var deviceName: String
+    public var deviceId: String
+
+    public init(deviceName: String, deviceId: String) {
+        self.deviceName = deviceName
+        self.deviceId = deviceId
     }
 }
 
