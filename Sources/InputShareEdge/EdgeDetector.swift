@@ -58,10 +58,8 @@ public final class EdgeDetector: @unchecked Sendable {
         } else if outsideExit && isInZone {
             isInZone = false
             cancelDwellTimer()
-            if hasTriggered {
-                hasTriggered = false
-                onEdgeEvent?(.exited)
-            }
+            onEdgeEvent?(.exited)
+            hasTriggered = false
         }
     }
 

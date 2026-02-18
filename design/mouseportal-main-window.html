@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MousePortal Edge Glow Animation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "mac-bg": "#f6f7f8",
+                        "mac-border": "rgba(0, 0, 0, 0.1)",
+                        "mac-toolbar": "rgba(255, 255, 255, 0.8)",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    keyframes: {
+                        breathingGlow: {
+                            '0%, 100%': { opacity: '0.8', filter: 'brightness(1)' },
+                            '50%': { opacity: '1', filter: 'brightness(1.3)' },
+                        }
+                    },
+                    animation: {
+                        'breathing-glow': 'breathingGlow 3s ease-in-out infinite',
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply font-display bg-slate-900 flex items-center justify-center min-h-screen m-0 overflow-hidden;
+            }
+        }
+        .macos-window {
+            width: 340px;
+            height: 520px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 0.5px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 0 0.5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
+        }
+        .unified-toolbar {
+            height: 52px;
+            border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+            background: linear-gradient(to bottom, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+        }
+        .edge-glow-overlay {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 40px;
+            background: linear-gradient(to left, #137fec 0%, rgba(19, 127, 236, 0.6) 20%, transparent 100%);
+            z-index: 100;
+            pointer-events: none;
+            box-shadow: -5px 0 30px rgba(19, 127, 236, 0.3);
+        }
+        .window-preview-edge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 20px;
+            background: linear-gradient(to left, #137fec, transparent);
+            border-right: 2px solid #137fec;
+            z-index: 20;
+        }
+        .mesh-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(19, 127, 236, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(147, 197, 253, 0.15) 0px, transparent 50%);
+        }
+        .toolbar-button {
+            @apply flex items-center justify-center w-8 h-7 rounded-md hover:bg-black/5 transition-colors text-slate-600;
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="edge-glow-overlay animate-breathing-glow"></div>
+<div class="macos-window rounded-2xl overflow-hidden relative">
+<div class="window-preview-edge animate-breathing-glow"></div>
+<div class="mesh-gradient"></div>
+<header class="unified-toolbar select-none">
+<div class="flex gap-2 absolute left-3 top-4">
+<div class="w-3 h-3 rounded-full bg-[#ff5f57] border border-black/5"></div>
+<div class="w-3 h-3 rounded-full bg-[#ffbd2e] border border-black/5"></div>
+<div class="w-3 h-3 rounded-full bg-[#28c940] border border-black/5"></div>
+</div>
+<div class="flex-1 flex justify-center items-center pointer-events-none">
+<span class="text-[13px] font-semibold text-slate-700">MousePortal</span>
+</div>
+</header>
+<main class="flex-1 flex flex-col overflow-hidden">
+<div class="px-6 py-8 text-center">
+<div class="relative inline-block mb-6">
+<div class="w-24 h-24 rounded-[22px] bg-white/60 shadow-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[48px]">warning</span>
+</div>
+<div class="absolute -inset-2 rounded-[26px] border-2 border-primary/20 scale-105"></div>
+</div>
+<h2 class="text-[17px] font-bold text-slate-800">Portal Warning</h2>
+<p class="text-[13px] text-slate-500 mt-2 px-4 leading-relaxed">Edge Proximity active. Your cursor is currently within the 5% trigger zone.</p>
+</div>
+<div class="px-4 space-y-4">
+<div class="p-4 rounded-xl bg-primary/5 border border-primary/10">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">animation</span>
+<div>
+<h3 class="text-[13px] font-semibold text-slate-800">Edge Glow Animation</h3>
+<p class="text-[11px] text-slate-500 mt-1">A visual 'breathing' indicator prevents accidental screen forwarding to remote Macs.</p>
+</div>
+</div>
+</div>
+<div class="px-2">
+<div class="flex items-center justify-between mb-2">
+<span class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Zone Config</span>
+<span class="text-[11px] font-medium text-primary">5% Width</span>
+</div>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<div class="flex-1 h-1.5 bg-black/5 rounded-full overflow-hidden">
+<div class="w-[5%] h-full bg-primary rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="mt-auto h-12 px-5 border-t border-black/5 flex items-center justify-between bg-white/20">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="text-[11px] font-medium text-slate-600">Active Monitor</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="toolbar-button">
+<span class="material-symbols-outlined text-[20px]">settings_input_component</span>
+</button>
+</div>
+</footer>
+</main>
+</div>
+<div class="fixed inset-0 -z-20 overflow-hidden pointer-events-none">
+<div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-4">
+<div class="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20"></div>
+<div class="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20"></div>
+<div class="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20"></div>
+<div class="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20"></div>
+</div>
+</div>
+
+</body></html>

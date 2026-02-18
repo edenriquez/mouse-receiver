@@ -6,6 +6,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var popover: NSPopover?
     let appState = AppState()
     private var statusTimer: Timer?
+    private let edgeGlowPanel = EdgeGlowPanel()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Menu bar item
@@ -27,6 +28,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         hosting.sizingOptions = .preferredContentSize
         popover.contentViewController = hosting
         self.popover = popover
+
+        // Edge glow overlay — show/hide when cursor approaches the screen edge
+        appState.onNearEdgeChanged = { [weak self] isNear in
+            if isNear {
+                self?.edgeGlowPanel.show()
+            } else {
+                self?.edgeGlowPanel.hide()
+            }
+        }
 
         // Periodically update menu bar appearance
         statusTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in

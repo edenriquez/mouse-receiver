@@ -19,7 +19,11 @@ struct PairingView: View {
             case .connecting:
                 connectingSection
             case .connected:
-                connectedSection
+                if appState.isNearEdge {
+                    portalWarningSection
+                } else {
+                    connectedSection
+                }
             case .forwarding:
                 forwardingSection
             }
@@ -114,6 +118,86 @@ struct PairingView: View {
         .frame(height: 80)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
+    }
+
+    // MARK: - Portal Warning (near edge)
+
+    private var portalWarningSection: some View {
+        VStack(spacing: 10) {
+            // Warning icon
+            ZStack {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(.white.opacity(0.6))
+                    .frame(width: 52, height: 52)
+                    .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 22))
+                    .foregroundStyle(accentBlue)
+            }
+
+            Text("Portal Warning")
+                .font(.system(size: 13, weight: .bold))
+
+            Text("Edge Proximity active. Your cursor is\ncurrently within the trigger zone.")
+                .font(.system(size: 10))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .lineSpacing(1)
+
+            // Edge Glow Animation card
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "waveform.path")
+                    .font(.system(size: 13))
+                    .foregroundStyle(accentBlue)
+                    .padding(.top, 1)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Edge Glow Animation")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("A visual 'breathing' indicator prevents accidental screen forwarding to remote Macs.")
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary)
+                        .lineSpacing(1)
+                }
+            }
+            .padding(8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(accentBlue.opacity(0.05))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(accentBlue.opacity(0.1), lineWidth: 0.5)
+                    )
+            )
+
+            // Zone Config
+            VStack(spacing: 4) {
+                HStack {
+                    Text("ZONE CONFIG")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(.tertiary)
+                        .tracking(0.5)
+                    Spacer()
+                    Text("5% Width")
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundStyle(accentBlue)
+                }
+
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(.primary.opacity(0.06))
+                        Capsule()
+                            .fill(accentBlue)
+                            .frame(width: geo.size.width * 0.05)
+                    }
+                }
+                .frame(height: 4)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
     }
 
     // MARK: - Connected

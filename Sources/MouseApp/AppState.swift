@@ -22,6 +22,10 @@ public final class AppState {
     public var forwardingState: ForwardingState = .idle
     public var discoveredDevices: [DiscoveredDevice] = []
     public var pairedDeviceName: String?
+    public var isNearEdge: Bool = false
+
+    /// Called on the main queue when edge proximity changes (for managing glow overlay)
+    public var onNearEdgeChanged: ((Bool) -> Void)?
 
     private let browser = BonjourBrowser()
     private var advertiser: BonjourAdvertiser?
@@ -230,10 +234,26 @@ public final class AppState {
         edgeDetector = edge
 
         edge.onEdgeEvent = { [weak self] event in
-            if case .triggered(let pos) = event {
+            guard let self else { return }
+            switch event {
+            case .entered:
+                DispatchQueue.main.async {
+                    self.isNearEdge = true
+                    self.onNearEdgeChanged?(true)
+                }
+            case .triggered(let pos):
+                DispatchQueue.main.async {
+                    self.isNearEdge = false
+                    self.onNearEdgeChanged?(false)
+                }
                 print("[App] Right edge triggered at Y=\(Int(pos.y))")
-                self?.crossingPosition = pos
-                self?.stateMachine?.edgeTriggered()
+                self.crossingPosition = pos
+                self.stateMachine?.edgeTriggered()
+            case .exited:
+                DispatchQueue.main.async {
+                    self.isNearEdge = false
+                    self.onNearEdgeChanged?(false)
+                }
             }
         }
 
