@@ -23,6 +23,9 @@ public final class EventTapCapture {
     private var cursorHidden: Bool = false
     /// Center of screen — cursor gets warped here on every local event to keep it pinned
     private var pinPoint: CGPoint = .zero
+    /// Number of mouse-move events to drop after entering suppression,
+    /// to discard the warp-to-pinPoint delta that CGWarpMouseCursorPosition generates.
+    private var suppressionWarmup: Int = 0
 
     /// Begin suppressing: freeze cursor from HID, optionally hide it,
     /// track a virtual cursor from `virtualStart` for position events.
@@ -33,6 +36,11 @@ public final class EventTapCapture {
         guard !isSuppressing else { return }
         virtualPosition = virtualStart
         pinPoint = CGPoint(x: geometry.bounds.midX, y: geometry.bounds.midY)
+        // Drop the first few mouse-move events after suppression starts.
+        // CGWarpMouseCursorPosition(pinPoint) generates a CGEvent whose delta
+        // equals the warp distance (edge→center), which would be forwarded
+        // as real mouse movement otherwise.
+        suppressionWarmup = hideCursor ? 3 : 0
         isSuppressing = true
         CGAssociateMouseAndMouseCursorPosition(0)
         if hideCursor {
@@ -97,6 +105,15 @@ public final class EventTapCapture {
             }
 
             if unmanagedSelf.isSuppressing {
+                // During warmup, drop mouse-move events to discard warp-generated deltas
+                if type == .mouseMoved && unmanagedSelf.suppressionWarmup > 0 {
+                    unmanagedSelf.suppressionWarmup -= 1
+                    if unmanagedSelf.cursorHidden {
+                        CGWarpMouseCursorPosition(unmanagedSelf.pinPoint)
+                    }
+                    return nil
+                }
+
                 // Track virtual cursor via deltas while real cursor is pinned
                 if type == .mouseMoved {
                     let dx = CGFloat(event.getDoubleValueField(.mouseEventDeltaX))
