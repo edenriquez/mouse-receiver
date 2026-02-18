@@ -22,10 +22,13 @@ public final class AppState {
     public var forwardingState: ForwardingState = .idle
     public var discoveredDevices: [DiscoveredDevice] = []
     public var pairedDeviceName: String?
-    public var isNearEdge: Bool = false
+    /// 0.0 (far) → 1.0 (at edge). Drives the progressive edge glow overlay.
+    public var edgeProximity: CGFloat = 0
+    /// Derived: true when cursor is close enough to show portal warning in UI.
+    public var isNearEdge: Bool { edgeProximity > 0.05 }
 
-    /// Called on the main queue when edge proximity changes (for managing glow overlay)
-    public var onNearEdgeChanged: ((Bool) -> Void)?
+    /// Called on main queue with (proximity, isRightEdge) to drive glow panel.
+    public var onEdgeGlowUpdate: ((_ proximity: CGFloat, _ rightEdge: Bool) -> Void)?
 
     private let browser = BonjourBrowser()
     private var advertiser: BonjourAdvertiser?
@@ -54,6 +57,11 @@ public final class AppState {
     private var pendingMouseMove: InputEvent?
     private var coalesceTimer: DispatchSourceTimer?
     private static let coalesceInterval: TimeInterval = 0.008  // ~125 Hz
+
+    // Edge proximity tracking (drives progressive glow)
+    private var _senderProximity: CGFloat = 0
+    private var _receiverProximity: CGFloat = 0
+    private static let glowZoneFraction: CGFloat = 0.05  // 5% of edge-display width
 
     public init() {
         ensureAccessibility()
@@ -87,11 +95,17 @@ public final class AppState {
         incomingFramed?.cancel()
         incomingFramed = nil
 
+        // Reset edge proximity
+        _senderProximity = 0
+        _receiverProximity = 0
+
         // Failsafe — ensure HID is re-associated no matter what
         CGAssociateMouseAndMouseCursorPosition(1)
         CGDisplayShowCursor(CGMainDisplayID())
 
         DispatchQueue.main.async {
+            self.edgeProximity = 0
+            self.onEdgeGlowUpdate?(0, true)
             self.connectionStatus = .disconnected
             self.forwardingState = .idle
             self.pairedDeviceName = nil
@@ -234,26 +248,10 @@ public final class AppState {
         edgeDetector = edge
 
         edge.onEdgeEvent = { [weak self] event in
-            guard let self else { return }
-            switch event {
-            case .entered:
-                DispatchQueue.main.async {
-                    self.isNearEdge = true
-                    self.onNearEdgeChanged?(true)
-                }
-            case .triggered(let pos):
-                DispatchQueue.main.async {
-                    self.isNearEdge = false
-                    self.onNearEdgeChanged?(false)
-                }
+            if case .triggered(let pos) = event {
                 print("[App] Right edge triggered at Y=\(Int(pos.y))")
-                self.crossingPosition = pos
-                self.stateMachine?.edgeTriggered()
-            case .exited:
-                DispatchQueue.main.async {
-                    self.isNearEdge = false
-                    self.onNearEdgeChanged?(false)
-                }
+                self?.crossingPosition = pos
+                self?.stateMachine?.edgeTriggered()
             }
         }
 
@@ -281,7 +279,22 @@ public final class AppState {
         }, geometry: geometry)
 
         cap.onRawMouseMove = { [weak self] point in
-            self?.edgeDetector?.update(position: point)
+            guard let self else { return }
+            self.edgeDetector?.update(position: point)
+
+            // Progressive edge glow — distance to right edge → proximity 0..1
+            let suppressing = self.capture?.isSuppressing ?? false
+            let edgeDisplay = geometry.displayAtRightEdge()
+            let glowZone = edgeDisplay.width * Self.glowZoneFraction
+            let dist = suppressing ? CGFloat.infinity : (geometry.bounds.maxX - point.x)
+            let prox = max(0, min(1, 1 - dist / glowZone))
+            if abs(prox - self._senderProximity) > 0.01 || (prox == 0) != (self._senderProximity == 0) {
+                self._senderProximity = prox
+                DispatchQueue.main.async {
+                    self.edgeProximity = prox
+                    self.onEdgeGlowUpdate?(prox, true)
+                }
+            }
         }
 
         capture = cap
@@ -476,6 +489,19 @@ public final class AppState {
                 }
 
                 returnEdgeDetector?.update(position: receiverCursorPos)
+
+                // Progressive edge glow — distance to left edge → proximity 0..1
+                let leftDisplay = geometry.displayAtLeftEdge()
+                let glowZone = leftDisplay.width * Self.glowZoneFraction
+                let dist = receiverCursorPos.x - geometry.bounds.minX
+                let prox = max(0, min(1, 1 - dist / glowZone))
+                if abs(prox - _receiverProximity) > 0.01 || (prox == 0) != (_receiverProximity == 0) {
+                    _receiverProximity = prox
+                    DispatchQueue.main.async {
+                        self.edgeProximity = prox
+                        self.onEdgeGlowUpdate?(prox, false)
+                    }
+                }
             } else if input.kind == .mouseButton {
                 // Track button state for drag event generation
                 if let button = input.button, let state = input.buttonState {
@@ -501,7 +527,10 @@ public final class AppState {
             print("[App] Received deactivate — restoring local input")
             isInjecting = false
             receiverTap?.stopSuppressing()
+            _receiverProximity = 0
             DispatchQueue.main.async {
+                self.edgeProximity = 0
+                self.onEdgeGlowUpdate?(0, false)
                 self.connectionStatus = .connected
                 self.forwardingState = .idle
             }
@@ -607,6 +636,7 @@ public final class AppState {
         let normY = (crossingPosition.y - leftDisplay.minY) / leftDisplay.height
         print("[App] Sending deactivate (return) to sender (normY=\(String(format: "%.3f", normY))), restoring local input...")
         receiverTap?.stopSuppressing()
+        _receiverProximity = 0
         let payload = (try? InputShareCodec.encodePayload(DeactivatePayload(normalizedY: normY))) ?? Data()
         let env = MessageEnvelope(
             protocolVersion: InputShareCodec.protocolVersion,
@@ -620,6 +650,8 @@ public final class AppState {
             incomingFramed?.sendFrame(data)
         }
         DispatchQueue.main.async {
+            self.edgeProximity = 0
+            self.onEdgeGlowUpdate?(0, false)
             self.connectionStatus = .connected
             self.forwardingState = .idle
         }

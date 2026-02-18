@@ -29,18 +29,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover.contentViewController = hosting
         self.popover = popover
 
-        // Edge glow overlay — show/hide when cursor approaches the screen edge
-        appState.onNearEdgeChanged = { [weak self] isNear in
-            if isNear {
-                self?.edgeGlowPanel.show()
-            } else {
-                self?.edgeGlowPanel.hide()
-            }
+        // Edge glow overlay — progressive fade-in as cursor approaches screen edge
+        appState.onEdgeGlowUpdate = { [weak self] proximity, rightEdge in
+            self?.edgeGlowPanel.update(proximity: proximity, rightEdge: rightEdge)
         }
 
         // Periodically update menu bar appearance
         statusTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.updateStatusItem()
+            if self?.appState.connectionStatus == .disconnected {
+                self?.edgeGlowPanel.hide()
+            }
         }
     }
 
