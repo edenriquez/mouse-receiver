@@ -146,7 +146,7 @@ if args.mode == "receive" {
 
     let geometry = ScreenGeometry.allDisplays()
     let returnEdge = EdgeDetector(
-        trigger: EdgeTrigger(zone: .topLeft),
+        trigger: EdgeTrigger(zone: .left, dwellTime: 0.1),
         screenBounds: geometry.bounds,
         queue: queue
     )
@@ -155,20 +155,23 @@ if args.mode == "receive" {
     var isInjecting = false
 
     returnEdge.onEdgeEvent = { event in
-        guard isInjecting, event == .triggered else { return }
-        print("[Receiver] Top-left corner detected — sending deactivate")
-        isInjecting = false
-
-        let env = MessageEnvelope(
-            protocolVersion: InputShareCodec.protocolVersion,
-            messageType: .deactivate,
-            sequenceNumber: seq.next(),
-            monotonicTimeNs: MonotonicClock.nowNs(),
-            sourceDeviceId: deviceId,
-            payload: Data()
-        )
-        if let data = try? InputShareCodec.encodeEnvelope(env) {
-            activeFramed?.sendFrame(data)
+        guard isInjecting else { return }
+        if case .triggered(let pos) = event {
+            print("[Receiver] Left edge triggered at Y=\(Int(pos.y)) — sending deactivate")
+            isInjecting = false
+            let normY = geometry.normalize(point: pos).y
+            let payload = (try? InputShareCodec.encodePayload(DeactivatePayload(normalizedY: normY))) ?? Data()
+            let env = MessageEnvelope(
+                protocolVersion: InputShareCodec.protocolVersion,
+                messageType: .deactivate,
+                sequenceNumber: seq.next(),
+                monotonicTimeNs: MonotonicClock.nowNs(),
+                sourceDeviceId: deviceId,
+                payload: payload
+            )
+            if let data = try? InputShareCodec.encodeEnvelope(env) {
+                activeFramed?.sendFrame(data)
+            }
         }
     }
 
@@ -186,13 +189,14 @@ if args.mode == "receive" {
 
             switch env.messageType {
             case .activate:
-                print("[Receiver] Received activate — warping to top-left, now injecting")
                 isInjecting = true
+                let activatePayload = try? InputShareCodec.decodePayload(ActivatePayload.self, from: env.payload)
+                let normY = activatePayload?.normalizedPosition.y ?? 0.5
+                let cursorY = geometry.denormalize(x: 0, y: normY).y
+                print("[Receiver] Received activate — placing cursor at left edge Y=\(Int(cursorY))")
 
-                // Place cursor at top-left of virtual screen
-                CGWarpMouseCursorPosition(CGPoint(x: geometry.bounds.minX + 20, y: geometry.bounds.minY + 20))
+                CGWarpMouseCursorPosition(CGPoint(x: geometry.bounds.minX + 2, y: cursorY))
                 CGAssociateMouseAndMouseCursorPosition(1)
-                // Arm return edge — must leave corner before return can trigger
                 returnEdge.armAfterEntry()
 
                 let ack = MessageEnvelope(
@@ -247,26 +251,27 @@ let framed = NWFramedConnection(connection: conn, queue: queue)
 let geometry = ScreenGeometry.allDisplays()
 print("[Sender] Screen bounds: \(geometry.bounds)")
 let edgeDetector = EdgeDetector(
-    trigger: EdgeTrigger(zone: .topRight),
+    trigger: EdgeTrigger(zone: .right, dwellTime: 0.1),
     screenBounds: geometry.bounds,
     queue: queue
 )
 let stateMachine = ForwardingStateMachine(queue: queue)
 
 var capture: EventTapCapture!
+var crossingPosition: CGPoint = .zero
 
 stateMachine.onStateChange = { newState in
     print("[Sender] State: \(newState.rawValue)")
     switch newState {
     case .forwarding:
         let geo = ScreenGeometry.allDisplays()
-        capture.startSuppressing(virtualStart: CGPoint(x: geo.bounds.minX + 20, y: geo.bounds.minY + 20))
+        capture.startSuppressing(virtualStart: CGPoint(x: geo.bounds.minX, y: crossingPosition.y))
     case .idle:
         let wasSuppressing = capture.isSuppressing
         capture.stopSuppressing()
         if wasSuppressing {
             let geo = ScreenGeometry.allDisplays()
-            CGWarpMouseCursorPosition(CGPoint(x: geo.bounds.maxX - 20, y: geo.bounds.minY + 20))
+            CGWarpMouseCursorPosition(CGPoint(x: geo.bounds.maxX - 2, y: crossingPosition.y))
             edgeDetector.armAfterEntry()
         }
     default:
@@ -275,8 +280,9 @@ stateMachine.onStateChange = { newState in
 }
 
 stateMachine.onShouldSendActivate = {
-    print("[Sender] Sending activate...")
-    let payload = (try? InputShareCodec.encodePayload(ActivatePayload(normalizedPosition: NormalizedPoint(x: 1.0, y: 0.0)))) ?? Data()
+    let normY = geometry.normalize(point: crossingPosition).y
+    print("[Sender] Sending activate (normY=\(String(format: "%.3f", normY)))...")
+    let payload = (try? InputShareCodec.encodePayload(ActivatePayload(normalizedPosition: NormalizedPoint(x: 0.0, y: normY)))) ?? Data()
     let env = MessageEnvelope(
         protocolVersion: InputShareCodec.protocolVersion,
         messageType: .activate,
@@ -306,7 +312,9 @@ stateMachine.onShouldSendDeactivate = {
 }
 
 edgeDetector.onEdgeEvent = { event in
-    if event == .triggered {
+    if case .triggered(let pos) = event {
+        print("[Sender] Right edge triggered at Y=\(Int(pos.y))")
+        crossingPosition = pos
         stateMachine.edgeTriggered()
     }
 }
@@ -322,7 +330,13 @@ framed.onFrame = { data in
         print("[Sender] Received activated ack")
         stateMachine.receivedActivated()
     case .deactivate:
-        print("[Sender] Received deactivate from receiver — returning control")
+        if let deactPayload = try? InputShareCodec.decodePayload(DeactivatePayload.self, from: env.payload) {
+            let returnY = geometry.denormalize(x: 0, y: deactPayload.normalizedY).y
+            crossingPosition = CGPoint(x: geometry.bounds.maxX, y: returnY)
+            print("[Sender] Received deactivate from receiver — returning at Y=\(Int(returnY))")
+        } else {
+            print("[Sender] Received deactivate from receiver — returning control")
+        }
         stateMachine.receivedDeactivate()
     case .deactivated:
         stateMachine.receivedDeactivated()

@@ -39,6 +39,9 @@ public final class AppState {
     private let seq = Sequencer()
     private let deviceId = Host.current().localizedName ?? UUID().uuidString
 
+    // Y coordinate (in screen coords) where cursor crossed the edge
+    private var crossingPosition: CGPoint = .zero
+
     // Mouse move coalescing — only send latest position at fixed interval
     private var pendingMouseMove: InputEvent?
     private var coalesceTimer: DispatchSourceTimer?
@@ -172,9 +175,9 @@ public final class AppState {
             print("[App] Forwarding state -> \(newState.rawValue)")
 
             if newState == .forwarding {
-                // Virtual cursor starts at top-left of virtual screen (maps to receiver's top-left)
+                // Virtual cursor starts at receiver's left edge, same Y as crossing
                 let geo = ScreenGeometry.allDisplays()
-                let startPos = CGPoint(x: geo.bounds.minX + 20, y: geo.bounds.minY + 20)
+                let startPos = CGPoint(x: geo.bounds.minX, y: self.crossingPosition.y)
                 self.capture?.startSuppressing(virtualStart: startPos)
                 self.startCoalesceTimer()
             } else if newState == .idle {
@@ -183,11 +186,10 @@ public final class AppState {
                 self.stopCoalesceTimer()
 
                 if wasSuppressing {
-                    // Returning from forwarding — place cursor near top-right of full virtual screen
+                    // Returning — place cursor at right edge at the return Y
                     let geo = ScreenGeometry.allDisplays()
-                    let returnPos = CGPoint(x: geo.bounds.maxX - 20, y: geo.bounds.minY + 20)
+                    let returnPos = CGPoint(x: geo.bounds.maxX - 2, y: self.crossingPosition.y)
                     CGWarpMouseCursorPosition(returnPos)
-                    // Arm edge so it doesn't re-trigger until user leaves the corner
                     self.edgeDetector?.armAfterEntry()
                 }
             }
@@ -216,15 +218,16 @@ public final class AppState {
         print("[App] Screen bounds (all displays): \(geometry.bounds)")
 
         let edge = EdgeDetector(
-            trigger: EdgeTrigger(zone: .topRight),
+            trigger: EdgeTrigger(zone: .right, dwellTime: 0.1),
             screenBounds: geometry.bounds,
             queue: queue
         )
         edgeDetector = edge
 
         edge.onEdgeEvent = { [weak self] event in
-            if event == .triggered {
-                print("[App] Edge triggered — top-right corner")
+            if case .triggered(let pos) = event {
+                print("[App] Right edge triggered at Y=\(Int(pos.y))")
+                self?.crossingPosition = pos
                 self?.stateMachine?.edgeTriggered()
             }
         }
@@ -264,7 +267,15 @@ public final class AppState {
             print("[App] Received activated ack from receiver")
             stateMachine?.receivedActivated()
         case .deactivate:
-            print("[App] Received deactivate from receiver — returning control")
+            // Read return Y from receiver
+            if let deactPayload = try? InputShareCodec.decodePayload(DeactivatePayload.self, from: env.payload) {
+                let geo = ScreenGeometry.allDisplays()
+                let returnY = geo.denormalize(x: 0, y: deactPayload.normalizedY).y
+                crossingPosition = CGPoint(x: geo.bounds.maxX, y: returnY)
+                print("[App] Received deactivate from receiver — returning at Y=\(Int(returnY))")
+            } else {
+                print("[App] Received deactivate from receiver — returning control")
+            }
             stateMachine?.receivedDeactivate()
         case .deactivated:
             stateMachine?.receivedDeactivated()
@@ -296,17 +307,20 @@ public final class AppState {
         }
 
         let returnEdge = EdgeDetector(
-            trigger: EdgeTrigger(zone: .topLeft),
+            trigger: EdgeTrigger(zone: .left, dwellTime: 0.1),
             screenBounds: geometry.bounds,
             queue: queue
         )
         returnEdgeDetector = returnEdge
 
         returnEdge.onEdgeEvent = { [weak self] event in
-            guard let self, self.isInjecting, event == .triggered else { return }
-            print("[App] Return edge triggered — top-left corner")
-            self.isInjecting = false
-            self.sendDeactivateOnIncoming()
+            guard let self, self.isInjecting else { return }
+            if case .triggered(let pos) = event {
+                print("[App] Left edge triggered at Y=\(Int(pos.y)) — returning control")
+                self.crossingPosition = pos
+                self.isInjecting = false
+                self.sendDeactivateOnIncoming()
+            }
         }
 
         framed.onState = { [weak self] state in
@@ -343,18 +357,22 @@ public final class AppState {
 
         switch env.messageType {
         case .activate:
-            print("[App] Received activate — suppressing local input, warping cursor to top-left")
             isInjecting = true
             receiverEventCount = 0
+
+            // Read the crossing Y from sender
+            let activatePayload = try? InputShareCodec.decodePayload(ActivatePayload.self, from: env.payload)
+            let normY = activatePayload?.normalizedPosition.y ?? 0.5
+            let cursorY = geometry.denormalize(x: 0, y: normY).y
+            print("[App] Received activate — placing cursor at left edge Y=\(Int(cursorY))")
 
             // Suppress local trackpad/mouse — keep cursor visible (controlled remotely)
             receiverTap?.startSuppressing(virtualStart: .zero, hideCursor: false)
 
-            // Place cursor at top-left of receiver's virtual screen
-            let recGeo = ScreenGeometry.allDisplays()
-            CGWarpMouseCursorPosition(CGPoint(x: recGeo.bounds.minX + 20, y: recGeo.bounds.minY + 20))
+            // Place cursor at left edge of receiver's screen at matching Y
+            CGWarpMouseCursorPosition(CGPoint(x: geometry.bounds.minX + 2, y: cursorY))
 
-            // Arm return edge — cursor must leave the corner before return can trigger
+            // Arm return edge — cursor must leave the edge before return can trigger
             returnEdgeDetector?.armAfterEntry()
 
             DispatchQueue.main.async {
@@ -465,8 +483,10 @@ public final class AppState {
     }
 
     private func sendActivate() {
-        print("[App] Sending activate to receiver...")
-        let payload = (try? InputShareCodec.encodePayload(ActivatePayload(normalizedPosition: NormalizedPoint(x: 1.0, y: 0.0)))) ?? Data()
+        let geo = ScreenGeometry.allDisplays()
+        let normY = geo.normalize(point: crossingPosition).y
+        print("[App] Sending activate to receiver (normY=\(String(format: "%.3f", normY)))...")
+        let payload = (try? InputShareCodec.encodePayload(ActivatePayload(normalizedPosition: NormalizedPoint(x: 0.0, y: normY)))) ?? Data()
         let env = MessageEnvelope(
             protocolVersion: InputShareCodec.protocolVersion,
             messageType: .activate,
@@ -496,15 +516,18 @@ public final class AppState {
     }
 
     private func sendDeactivateOnIncoming() {
-        print("[App] Sending deactivate (return) to sender, restoring local input...")
+        let geo = ScreenGeometry.allDisplays()
+        let normY = geo.normalize(point: crossingPosition).y
+        print("[App] Sending deactivate (return) to sender (normY=\(String(format: "%.3f", normY))), restoring local input...")
         receiverTap?.stopSuppressing()
+        let payload = (try? InputShareCodec.encodePayload(DeactivatePayload(normalizedY: normY))) ?? Data()
         let env = MessageEnvelope(
             protocolVersion: InputShareCodec.protocolVersion,
             messageType: .deactivate,
             sequenceNumber: seq.next(),
             monotonicTimeNs: MonotonicClock.nowNs(),
             sourceDeviceId: deviceId,
-            payload: Data()
+            payload: payload
         )
         if let data = try? InputShareCodec.encodeEnvelope(env) {
             incomingFramed?.sendFrame(data)

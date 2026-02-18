@@ -4,11 +4,13 @@ import CoreGraphics
 public enum EdgeZone: String, Sendable {
     case topRight
     case topLeft
+    case right   // full right edge — any Y
+    case left    // full left edge — any Y
 }
 
 public enum EdgeEvent: Sendable {
     case entered
-    case triggered
+    case triggered(position: CGPoint)  // screen position at the moment of trigger
     case exited
 }
 
@@ -35,6 +37,7 @@ public final class EdgeDetector: @unchecked Sendable {
     private var dwellTimer: DispatchWorkItem?
     private var hasTriggered = false
     private let queue: DispatchQueue
+    private var lastPosition: CGPoint = .zero
 
     public init(trigger: EdgeTrigger, screenBounds: CGRect, queue: DispatchQueue = .main) {
         self.trigger = trigger
@@ -43,6 +46,7 @@ public final class EdgeDetector: @unchecked Sendable {
     }
 
     public func update(position: CGPoint) {
+        lastPosition = position
         let inZone = isInsideEnterZone(position)
         let outsideExit = isOutsideExitZone(position)
 
@@ -76,6 +80,10 @@ public final class EdgeDetector: @unchecked Sendable {
             return pos.x >= screenBounds.maxX - t && pos.y <= screenBounds.minY + t
         case .topLeft:
             return pos.x <= screenBounds.minX + t && pos.y <= screenBounds.minY + t
+        case .right:
+            return pos.x >= screenBounds.maxX - t
+        case .left:
+            return pos.x <= screenBounds.minX + t
         }
     }
 
@@ -86,6 +94,10 @@ public final class EdgeDetector: @unchecked Sendable {
             return pos.x < screenBounds.maxX - t || pos.y > screenBounds.minY + t
         case .topLeft:
             return pos.x > screenBounds.minX + t || pos.y > screenBounds.minY + t
+        case .right:
+            return pos.x < screenBounds.maxX - t
+        case .left:
+            return pos.x > screenBounds.minX + t
         }
     }
 
@@ -94,7 +106,7 @@ public final class EdgeDetector: @unchecked Sendable {
         let item = DispatchWorkItem { [weak self] in
             guard let self, self.isInZone else { return }
             self.hasTriggered = true
-            self.onEdgeEvent?(.triggered)
+            self.onEdgeEvent?(.triggered(position: self.lastPosition))
         }
         dwellTimer = item
         queue.asyncAfter(deadline: .now() + trigger.dwellTime, execute: item)

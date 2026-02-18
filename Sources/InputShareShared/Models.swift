@@ -118,6 +118,14 @@ public struct ActivatePayload: Codable, Sendable {
     }
 }
 
+public struct DeactivatePayload: Codable, Sendable {
+    public var normalizedY: Double  // Y coordinate at the crossing edge
+
+    public init(normalizedY: Double) {
+        self.normalizedY = normalizedY
+    }
+}
+
 public struct PairRequestPayload: Codable, Sendable {
     public var deviceName: String
     public var deviceId: String
