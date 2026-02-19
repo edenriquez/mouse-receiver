@@ -211,8 +211,9 @@ public final class EventTapCapture {
             queue.async { self.handler(e) }
 
         case .scrollWheel:
-            let dx = event.getDoubleValueField(.scrollWheelEventDeltaAxis2)
-            let dy = event.getDoubleValueField(.scrollWheelEventDeltaAxis1)
+            // Use pixel deltas (not line deltas) to match .pixel injection units
+            let dx = event.getDoubleValueField(.scrollWheelEventPointDeltaAxis2)
+            let dy = event.getDoubleValueField(.scrollWheelEventPointDeltaAxis1)
             let e = InputEvent(kind: .scroll, scroll: ScrollDelta(deltaX: dx, deltaY: dy), flags: flags)
             queue.async { self.handler(e) }
 

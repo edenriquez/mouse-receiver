@@ -46,9 +46,11 @@ public final class InputInjector {
 
         case .scroll:
             guard let s = event.scroll else { return }
-            let dy = Int32(s.deltaY)
-            let dx = Int32(s.deltaX)
-            guard let cg = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 2, wheel1: dy, wheel2: dx, wheel3: 0) else { return }
+            guard let cg = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 2,
+                                   wheel1: Int32(s.deltaY), wheel2: Int32(s.deltaX), wheel3: 0) else { return }
+            // Set precise point deltas (the Int32 wheel values lose fractional precision)
+            cg.setDoubleValueField(.scrollWheelEventPointDeltaAxis1, value: s.deltaY)
+            cg.setDoubleValueField(.scrollWheelEventPointDeltaAxis2, value: s.deltaX)
             cg.flags = CGEventFlags(rawValue: UInt64(event.flags))
             cg.setIntegerValueField(.eventSourceUserData, value: InputShareInjectionMarker.value)
             cg.post(tap: .cghidEventTap)
