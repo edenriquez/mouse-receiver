@@ -1,40 +1,25 @@
-# InputShare
+<p align="center">
+  <img src="assets/header.png" alt="MousePortal" width="700" />
+</p>
 
-Production-grade mouse and keyboard sharing for macOS.
+# MousePortal
 
-## Overview
+Seamlessly control multiple Macs with one mouse.
 
-**InputShare** is a native macOS application for sharing mouse and keyboard input across multiple Macs on a local network. Built with Swift using CoreGraphics, Network.framework, and other native APIs for low latency and reliability.
-
-Similar to: Barrier, Synergy, Universal Control
+MousePortal is a native macOS utility that shares mouse and keyboard input across multiple Macs on the same local network. Move your cursor to the screen edge, and it jumps to the next machine — with motion-blur transitions, edge glow effects, and sub-millisecond event coalescing.
 
 ## Features
 
-### ✅ Implemented (Phase 0)
-- CGEventTap-based input capture (mouse, keyboard, scroll)
-- CGEventPost input injection
-- Cursor warping and position synchronization
-- Coordinate normalization for resolution independence
-- TLS-encrypted transport with mutual authentication
-- Certificate pinning for security
-- Synthetic event detection (prevents feedback loops)
-
-### 🚧 In Progress (Phase 1)
-- Screen-edge detection with hysteresis
-- Seamless cursor handoff between machines
-- Input suppression on sender during forwarding
-- Modifier key state synchronization
-- Activation/deactivation handshake protocol
-
-### 📋 Planned
-- Bonjour service discovery
-- Device pairing UI
-- Multi-monitor support
-- Menu bar app
-- launchd integration
-- Sleep/wake recovery
-
-See [ROADMAP.md](docs/ROADMAP.md) for the complete feature roadmap.
+- **Edge detection with portal transitions** — cursor crosses screen boundaries with visual glow, motion trails, and snap flash effects
+- **Physics Lab** — tune transition feel in real time: spring stiffness, blur intensity, portal friction, and transition mode (instant / elastic / smooth)
+- **Settings sync** — physics config propagates between connected machines over the wire with debounced updates
+- **Blur intensity controls** — drives glow spread (shadow radius 8–40pt), gradient diffusion, motion trail thickness, and portal snap flash duration
+- **Multi-monitor support** — correctly detects and handles multiple displays on both sender and receiver
+- **Bonjour auto-discovery** — finds other Macs on the network automatically, no manual IP configuration
+- **Low latency** — 1ms coalesce interval, immediate-first-send pattern, raw pixel delta forwarding
+- **Input suppression** — sender's local input is suppressed while forwarding; receiver suppresses its own trackpad
+- **Menu bar app** — lives in the status bar with connection state indicator
+- **Native macOS** — built entirely with Swift, CoreGraphics, Network.framework, and AppKit
 
 ## Requirements
 
@@ -44,131 +29,61 @@ See [ROADMAP.md](docs/ROADMAP.md) for the complete feature roadmap.
 
 ## Quick Start
 
-### 1. Setup
-Run the setup script to generate TLS certificates and build the project:
+### Build & Run
 
-```bash
-./setup.sh
-```
-
-This will:
-- Generate a local Certificate Authority
-- Create certificates for two test devices
-- Build the project
-- Create convenience run scripts
-
-### 2. Run Receiver
-On the machine that will receive input:
-
-```bash
-./run-receiver.sh
-```
-
-Or manually:
-```bash
-swift run inputshare receive \
-  --port 4242 \
-  --identity-p12 .certs/device-a.p12 \
-  --identity-pass inputshare-dev \
-  --pin-sha256 <device-b-pin>
-```
-
-### 3. Run Sender
-On the machine that will send input:
-
-```bash
-./run-sender.sh
-```
-
-Or manually:
-```bash
-swift run inputshare send \
-  --host <receiver-ip> \
-  --port 4242 \
-  --identity-p12 .certs/device-b.p12 \
-  --identity-pass inputshare-dev \
-  --pin-sha256 <device-a-pin>
-```
-
-**Note:** You'll be prompted for Accessibility permissions on first run. Grant them in System Settings > Privacy & Security > Accessibility.
-
-## Architecture
-
-```
-InputShare/
-├── Sources/
-│   ├── InputShareShared/      # Protocol models, codecs
-│   ├── InputShareTransport/   # Network.framework TLS + framing
-│   ├── InputShareCapture/     # CGEventTap capture + geometry
-│   ├── InputShareInjection/   # CGEventPost injection
-│   └── InputShareCLI/         # Command-line interface
-├── docs/                      # Documentation and ADRs
-└── Package.swift              # Swift Package Manager manifest
-```
-
-### Key Design Decisions
-- **Protocol:** Length-prefixed JSON messages over TLS
-- **Coordinates:** Normalized [0,1] range for resolution independence
-- **Security:** Mutual TLS with certificate pinning
-- **Input Capture:** CGEventTap (passive, non-blocking)
-- **Input Injection:** CGEventPost with synthetic event markers
-
-See [Architecture Decision Records](docs/adrs/) for detailed technical decisions.
-
-## Development
-
-### Build
 ```bash
 swift build
 ```
 
-### Run Tests
-```bash
-swift test
+Launch the app — it appears in the menu bar. Click the icon to open the pairing popover, discover nearby Macs, and connect.
+
+**Note:** You'll be prompted for Accessibility permissions on first run. Grant them in System Settings > Privacy & Security > Accessibility.
+
+### Physics Lab
+
+Once connected, open the Physics Lab from the popover to tune transition behavior:
+
+| Parameter | Effect |
+|---|---|
+| **Mode** | instant (minimal visual), elastic (edge tug), smooth (motion blur trail) |
+| **Spring Stiffness** | Controls elastic resistance at the edge |
+| **Blur Intensity** | Glow spread, gradient diffusion, trail thickness, flash duration |
+| **Portal Friction** | Dwell time before edge crossing triggers |
+
+Settings sync across both devices automatically.
+
+## Architecture
+
+```
+Sources/
+├── InputShareShared/      # Protocol models, codecs, message types
+├── InputShareTransport/   # Network.framework framing
+├── InputShareCapture/     # CGEventTap capture + screen geometry
+├── InputShareInjection/   # CGEventPost injection
+├── InputShareEdge/        # Edge detection + triggers
+├── InputShareDiscovery/   # Bonjour browsing + advertising
+├── MouseApp/              # SwiftUI menu bar app, Physics Lab, edge glow
+└── InputShareCLI/         # Command-line interface
 ```
 
-### Generate Certificates
-See [docs/DEV_TLS.md](docs/DEV_TLS.md) for detailed TLS setup instructions.
+### Protocol
 
-## Project Rules
+Length-prefixed JSON messages over TCP. Message types: `hello`, `activate`, `activated`, `deactivate`, `deactivated`, `inputEvent`, `pairRequest`, `pairAccept`, `physicsConfig`.
 
-This project follows strict architectural guidelines documented in [ANTIGRAVITY_PROJECT_RULES.md](docs/ANTIGRAVITY_PROJECT_RULES.md):
+### Key Design Decisions
 
-- **Language:** Swift only (no Python, Electron, etc.)
-- **APIs:** Native macOS frameworks only
-- **Input:** CGEventTap (required)
-- **Network:** Network.framework with TLS
-- **Security:** Mutual authentication, encrypted transport
-- **Architecture:** Modular, testable, launchd-compatible
+- **Coordinates:** Raw pixel deltas for mouse movement (no normalization loss), normalized Y for edge crossing handoff
+- **Coalescing:** First event sent immediately, subsequent burst events accumulated and flushed at 1ms intervals
+- **Edge glow:** Full-height NSPanel overlay with SwiftUI gradient, breathing animation, and velocity-driven width
+- **Config sync:** Debounced at 0.3s to avoid spamming during slider drag, sent on connection ready for reconnect persistence
 
-## Security
+## Development
 
-- All communication is encrypted via TLS 1.3
-- Mutual authentication required (both peers must present certificates)
-- Certificate pinning prevents MITM attacks
-- Synthetic event markers prevent feedback loops
-- No unauthenticated input injection
-
-**Note:** Current setup uses development certificates. Production deployments should use proper certificate management and Keychain integration.
-
-## Contributing
-
-See [FIRST_SPRINT_PLAN.md](docs/FIRST_SPRINT_PLAN.md) for current development priorities.
-
-Key areas for contribution:
-- Edge detection and handoff logic
-- Modifier key synchronization
-- Connection resilience and recovery
-- Multi-monitor support
-- Unit tests
+```bash
+swift build    # Build all targets
+swift test     # Run tests
+```
 
 ## License
 
 [Add license information]
-
-## References
-
-- [Product Roadmap](docs/ROADMAP.md)
-- [Sprint Plan](docs/FIRST_SPRINT_PLAN.md)
-- [Architecture Decision Records](docs/adrs/)
-- [Project Rules](docs/ANTIGRAVITY_PROJECT_RULES.md)
