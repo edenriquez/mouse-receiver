@@ -55,8 +55,9 @@ public final class AppState {
 
     // Mouse move coalescing — only send latest position at fixed interval
     private var pendingMouseMove: InputEvent?
+    private var pendingScroll: InputEvent?
     private var coalesceTimer: DispatchSourceTimer?
-    private static let coalesceInterval: TimeInterval = 0.008  // ~125 Hz
+    private static let coalesceInterval: TimeInterval = 0.004  // ~250 Hz
 
     // Edge proximity tracking (drives progressive glow)
     private var _senderProximity: CGFloat = 0
@@ -268,10 +269,25 @@ public final class AppState {
                 } else {
                     self.pendingMouseMove = input
                 }
+            } else if input.kind == .scroll {
+                // Coalesce scroll events — accumulate deltas
+                if var pending = self.pendingScroll, let newScroll = input.scroll {
+                    let oldDx = pending.scroll?.deltaX ?? 0
+                    let oldDy = pending.scroll?.deltaY ?? 0
+                    pending.scroll = ScrollDelta(deltaX: oldDx + newScroll.deltaX, deltaY: oldDy + newScroll.deltaY)
+                    pending.flags = input.flags
+                    self.pendingScroll = pending
+                } else {
+                    self.pendingScroll = input
+                }
             } else {
-                // Flush any pending mouse move before sending non-move events
+                // Flush pending mouse move and scroll before sending non-move events
                 if let pending = self.pendingMouseMove {
                     self.pendingMouseMove = nil
+                    self.sendInputEvent(pending)
+                }
+                if let pending = self.pendingScroll {
+                    self.pendingScroll = nil
                     self.sendInputEvent(pending)
                 }
                 self.sendInputEvent(input)
@@ -556,11 +572,17 @@ public final class AppState {
     private func startCoalesceTimer() {
         stopCoalesceTimer()
         let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.schedule(deadline: .now(), repeating: Self.coalesceInterval)
+        timer.schedule(deadline: .now(), repeating: Self.coalesceInterval, leeway: .milliseconds(1))
         timer.setEventHandler { [weak self] in
-            guard let self, let pending = self.pendingMouseMove else { return }
-            self.pendingMouseMove = nil
-            self.sendInputEvent(pending)
+            guard let self else { return }
+            if let pending = self.pendingMouseMove {
+                self.pendingMouseMove = nil
+                self.sendInputEvent(pending)
+            }
+            if let pending = self.pendingScroll {
+                self.pendingScroll = nil
+                self.sendInputEvent(pending)
+            }
         }
         coalesceTimer = timer
         timer.resume()
@@ -569,9 +591,13 @@ public final class AppState {
     private func stopCoalesceTimer() {
         coalesceTimer?.cancel()
         coalesceTimer = nil
-        // Flush any remaining pending move
+        // Flush any remaining pending events
         if let pending = pendingMouseMove {
             pendingMouseMove = nil
+            sendInputEvent(pending)
+        }
+        if let pending = pendingScroll {
+            pendingScroll = nil
             sendInputEvent(pending)
         }
     }
