@@ -83,7 +83,6 @@ public final class AppState {
 
         // Receiver side
         isInjecting = false
-        stopReceiverTimer()
         receiverTap?.stopSuppressing()
         receiverTap?.stop()
         receiverTap = nil
@@ -293,7 +292,7 @@ public final class AppState {
                 }
                 self.sendInputEvent(input)
             }
-        }, geometry: geometry)
+        }, queue: queue, geometry: geometry)
 
         cap.onRawMouseMove = { [weak self] point in
             guard let self else { return }
@@ -352,6 +351,20 @@ public final class AppState {
     // MARK: - Receiver Setup (incoming connection)
 
     private func handleIncomingConnection(_ conn: NWConnection) {
+        // Tear down any existing receiver state to prevent dangling event tap pointers
+        // (Bonjour can deliver duplicate connections via IPv4 + IPv6)
+        if incomingFramed != nil {
+            print("[App] Replacing existing incoming connection")
+            isInjecting = false
+            receiverTap?.stopSuppressing()
+            receiverTap?.stop()
+            receiverTap = nil
+            incomingFramed?.cancel()
+            incomingFramed = nil
+            returnEdgeDetector = nil
+            injector = nil
+        }
+
         print("[App] Incoming connection from \(conn.endpoint)")
         let framed = NWFramedConnection(connection: conn, queue: queue)
         incomingFramed = framed
@@ -414,13 +427,6 @@ public final class AppState {
 
     private var receiverEventCount = 0
     private var receiverButtonsDown: Set<MouseButton> = []
-    // Receiver-side coalescing — smooth out TCP batch delivery
-    private var receiverMoveTimer: DispatchSourceTimer?
-    private var receiverHasPendingMove = false
-    private var receiverMoveFlags: UInt64 = 0
-    private var lastInjectedPos: CGPoint = .zero
-    private var receiverPendingScroll: ScrollDelta?
-    private var receiverScrollFlags: UInt64 = 0
 
     private func handleReceiverFrame(_ data: Data) {
         guard let env = try? InputShareCodec.decodeEnvelope(data) else {
@@ -447,8 +453,6 @@ public final class AppState {
             // Suppress local trackpad/mouse — keep cursor visible (controlled remotely)
             receiverTap?.startSuppressing(virtualStart: .zero, hideCursor: false)
             CGWarpMouseCursorPosition(startPos)
-            lastInjectedPos = startPos
-            startReceiverTimer()
 
             // Arm return edge — cursor must leave the edge before return can trigger
             returnEdgeDetector?.armAfterEntry()
@@ -479,7 +483,7 @@ public final class AppState {
             receiverEventCount += 1
 
             if input.kind == .mouseMove {
-                // Accumulate deltas — actual cursor injection happens via receiverMoveTimer
+                // Apply raw pixel deltas directly — no coalescing to minimize latency
                 if let dx = input.mouseDeltaX, let dy = input.mouseDeltaY {
                     receiverCursorPos.x += CGFloat(dx)
                     receiverCursorPos.y += CGFloat(dy)
@@ -487,23 +491,44 @@ public final class AppState {
                     receiverCursorPos.x = max(b.minX, min(receiverCursorPos.x, b.maxX))
                     receiverCursorPos.y = max(b.minY, min(receiverCursorPos.y, b.maxY))
                 }
-                receiverHasPendingMove = true
-                receiverMoveFlags = input.flags
-            } else if input.kind == .scroll {
-                // Accumulate scroll deltas — flushed by receiverMoveTimer
-                if let s = input.scroll {
-                    if var existing = receiverPendingScroll {
-                        existing.deltaX += s.deltaX
-                        existing.deltaY += s.deltaY
-                        receiverPendingScroll = existing
-                    } else {
-                        receiverPendingScroll = s
+
+                let moveType: CGEventType
+                let moveButton: CGMouseButton
+                if receiverButtonsDown.contains(.left) {
+                    moveType = .leftMouseDragged; moveButton = .left
+                } else if receiverButtonsDown.contains(.right) {
+                    moveType = .rightMouseDragged; moveButton = .right
+                } else if receiverButtonsDown.contains(.other) {
+                    moveType = .otherMouseDragged; moveButton = .center
+                } else {
+                    moveType = .mouseMoved; moveButton = .left
+                }
+
+                CGWarpMouseCursorPosition(receiverCursorPos)
+                if let cg = CGEvent(mouseEventSource: nil, mouseType: moveType, mouseCursorPosition: receiverCursorPos, mouseButton: moveButton) {
+                    // Set delta fields so apps see smooth relative movement
+                    cg.setDoubleValueField(.mouseEventDeltaX, value: Double(input.mouseDeltaX ?? 0))
+                    cg.setDoubleValueField(.mouseEventDeltaY, value: Double(input.mouseDeltaY ?? 0))
+                    cg.flags = CGEventFlags(rawValue: UInt64(input.flags))
+                    cg.setIntegerValueField(.eventSourceUserData, value: Int64(InputShareInjectionMarker.value))
+                    cg.post(tap: .cghidEventTap)
+                }
+
+                returnEdgeDetector?.update(position: receiverCursorPos)
+
+                // Progressive edge glow — distance to left edge → proximity 0..1
+                let leftDisplay = geometry.displayAtLeftEdge()
+                let glowZone = leftDisplay.width * Self.glowZoneFraction
+                let dist = receiverCursorPos.x - geometry.bounds.minX
+                let prox = max(0, min(1, 1 - dist / glowZone))
+                if abs(prox - _receiverProximity) > 0.01 || (prox == 0) != (_receiverProximity == 0) {
+                    _receiverProximity = prox
+                    DispatchQueue.main.async {
+                        self.edgeProximity = prox
+                        self.onEdgeGlowUpdate?(prox, false)
                     }
-                    receiverScrollFlags = input.flags
                 }
             } else if input.kind == .mouseButton {
-                // Flush pending move so button fires at correct cursor position
-                flushReceiverEvents()
                 // Track button state for drag event generation
                 if let button = input.button, let state = input.buttonState {
                     if state == .down {
@@ -514,14 +539,12 @@ public final class AppState {
                 }
                 injector?.inject(input)
             } else {
-                // Key events: inject immediately
                 injector?.inject(input)
             }
 
         case .deactivate:
             print("[App] Received deactivate — restoring local input")
             isInjecting = false
-            stopReceiverTimer()
             receiverTap?.stopSuppressing()
             _receiverProximity = 0
             DispatchQueue.main.async {
@@ -579,78 +602,6 @@ public final class AppState {
         if let pending = pendingScroll {
             pendingScroll = nil
             sendInputEvent(pending)
-        }
-    }
-
-    // MARK: - Receiver Move Coalescing
-
-    private func startReceiverTimer() {
-        stopReceiverTimer()
-        let timer = DispatchSource.makeTimerSource(queue: queue)
-        timer.schedule(deadline: .now(), repeating: 0.004, leeway: .milliseconds(1))
-        timer.setEventHandler { [weak self] in
-            self?.flushReceiverEvents()
-        }
-        receiverMoveTimer = timer
-        timer.resume()
-    }
-
-    private func stopReceiverTimer() {
-        receiverMoveTimer?.cancel()
-        receiverMoveTimer = nil
-        receiverHasPendingMove = false
-        receiverPendingScroll = nil
-    }
-
-    private func flushReceiverEvents() {
-        guard let geometry = receiverGeometry else { return }
-
-        if receiverHasPendingMove {
-            receiverHasPendingMove = false
-
-            let moveType: CGEventType
-            let moveButton: CGMouseButton
-            if receiverButtonsDown.contains(.left) {
-                moveType = .leftMouseDragged; moveButton = .left
-            } else if receiverButtonsDown.contains(.right) {
-                moveType = .rightMouseDragged; moveButton = .right
-            } else if receiverButtonsDown.contains(.other) {
-                moveType = .otherMouseDragged; moveButton = .center
-            } else {
-                moveType = .mouseMoved; moveButton = .left
-            }
-
-            CGWarpMouseCursorPosition(receiverCursorPos)
-            if let cg = CGEvent(mouseEventSource: nil, mouseType: moveType, mouseCursorPosition: receiverCursorPos, mouseButton: moveButton) {
-                // Set delta fields so apps see smooth relative movement
-                cg.setDoubleValueField(.mouseEventDeltaX, value: Double(receiverCursorPos.x - lastInjectedPos.x))
-                cg.setDoubleValueField(.mouseEventDeltaY, value: Double(receiverCursorPos.y - lastInjectedPos.y))
-                cg.flags = CGEventFlags(rawValue: receiverMoveFlags)
-                cg.setIntegerValueField(.eventSourceUserData, value: Int64(InputShareInjectionMarker.value))
-                cg.post(tap: .cghidEventTap)
-            }
-            lastInjectedPos = receiverCursorPos
-
-            returnEdgeDetector?.update(position: receiverCursorPos)
-
-            // Progressive edge glow — distance to left edge → proximity 0..1
-            let leftDisplay = geometry.displayAtLeftEdge()
-            let glowZone = leftDisplay.width * Self.glowZoneFraction
-            let dist = receiverCursorPos.x - geometry.bounds.minX
-            let prox = max(0, min(1, 1 - dist / glowZone))
-            if abs(prox - _receiverProximity) > 0.01 || (prox == 0) != (_receiverProximity == 0) {
-                _receiverProximity = prox
-                DispatchQueue.main.async {
-                    self.edgeProximity = prox
-                    self.onEdgeGlowUpdate?(prox, false)
-                }
-            }
-        }
-
-        if let scroll = receiverPendingScroll {
-            receiverPendingScroll = nil
-            let scrollEvent = InputEvent(kind: .scroll, scroll: scroll, flags: receiverScrollFlags)
-            injector?.inject(scrollEvent)
         }
     }
 
@@ -713,7 +664,6 @@ public final class AppState {
         let leftDisplay = geo.displayAtLeftEdge()
         let normY = (crossingPosition.y - leftDisplay.minY) / leftDisplay.height
         print("[App] Sending deactivate (return) to sender (normY=\(String(format: "%.3f", normY))), restoring local input...")
-        stopReceiverTimer()
         receiverTap?.stopSuppressing()
         _receiverProximity = 0
         let payload = (try? InputShareCodec.encodePayload(DeactivatePayload(normalizedY: normY))) ?? Data()
