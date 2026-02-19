@@ -50,6 +50,7 @@ public final class AppState {
     // Position and display where cursor crossed the edge
     private var crossingPosition: CGPoint = .zero
     private var crossingDisplayRect: CGRect = .zero
+    private var senderGeometry: ScreenGeometry?
 
     // Receiver cursor tracking — apply deltas instead of denormalizing
     private var receiverCursorPos: CGPoint = .zero
@@ -82,6 +83,7 @@ public final class AppState {
         stateMachine?.reset()
         stateMachine = nil
         edgeDetector = nil
+        senderGeometry = nil
 
         // Receiver side
         isInjecting = false
@@ -240,6 +242,7 @@ public final class AppState {
 
     private func startSenderCapture() {
         let geometry = ScreenGeometry.allDisplays(log: true)
+        senderGeometry = geometry
         print("[App] Screen bounds (all displays): \(geometry.bounds)")
 
         let edge = EdgeDetector(
@@ -333,11 +336,18 @@ public final class AppState {
             print("[App] Received activated ack from receiver")
             stateMachine?.receivedActivated()
         case .deactivate:
-            // Read return Y from receiver, denormalize against the display where we originally crossed
+            // Denormalize return Y against entire virtual screen, find the right-boundary display
             if let deactPayload = try? InputShareCodec.decodePayload(DeactivatePayload.self, from: env.payload) {
-                let returnY = crossingDisplayRect.minY + CGFloat(deactPayload.normalizedY) * crossingDisplayRect.height
-                crossingPosition = CGPoint(x: crossingDisplayRect.maxX, y: returnY)
-                print("[App] Received deactivate from receiver — returning at Y=\(Int(returnY)) on display \(Int(crossingDisplayRect.width))x\(Int(crossingDisplayRect.height))")
+                let geo = senderGeometry ?? ScreenGeometry.allDisplays()
+                let returnY = geo.bounds.minY + CGFloat(deactPayload.normalizedY) * geo.bounds.height
+                if let returnDisplay = geo.displayAtRightBoundary(forY: returnY) {
+                    crossingDisplayRect = returnDisplay
+                    let clampedY = min(max(returnY, returnDisplay.minY + 1), returnDisplay.maxY - 1)
+                    crossingPosition = CGPoint(x: returnDisplay.maxX, y: clampedY)
+                } else {
+                    crossingPosition = CGPoint(x: crossingDisplayRect.maxX, y: returnY)
+                }
+                print("[App] Received deactivate from receiver — returning at Y=\(Int(crossingPosition.y)) on display \(Int(crossingDisplayRect.width))x\(Int(crossingDisplayRect.height))")
             } else {
                 print("[App] Received deactivate from receiver — returning control")
             }
@@ -445,14 +455,16 @@ public final class AppState {
             receiverEventCount = 0
             receiverButtonsDown.removeAll()
 
-            // Place cursor on the left-edge display at proportional Y
+            // Denormalize Y against entire virtual screen, then find the left-boundary display at that Y
             let activatePayload = try? InputShareCodec.decodePayload(ActivatePayload.self, from: env.payload)
             let normY = activatePayload?.normalizedPosition.y ?? 0.5
-            let leftDisplay = geometry.displayAtLeftEdge()
-            let cursorY = leftDisplay.minY + CGFloat(normY) * leftDisplay.height
-            let startPos = CGPoint(x: leftDisplay.minX + 2, y: cursorY)
+            let globalY = geometry.bounds.minY + CGFloat(normY) * geometry.bounds.height
+            let entryDisplay = geometry.displayAtLeftBoundary(forY: globalY) ?? geometry.displayAtLeftEdge()
+            // Clamp Y within the entry display so cursor doesn't land outside its bounds
+            let cursorY = min(max(globalY, entryDisplay.minY + 1), entryDisplay.maxY - 1)
+            let startPos = CGPoint(x: entryDisplay.minX + 2, y: cursorY)
             receiverCursorPos = startPos
-            print("[App] Received activate — placing cursor at left edge Y=\(Int(cursorY)) (leftDisplay=\(Int(leftDisplay.width))x\(Int(leftDisplay.height)) at Y=\(Int(leftDisplay.minY)))")
+            print("[App] Received activate — placing cursor at left edge Y=\(Int(cursorY)) (entryDisplay=\(Int(entryDisplay.width))x\(Int(entryDisplay.height)) at Y=\(Int(entryDisplay.minY)))")
 
             // Suppress local trackpad/mouse — keep cursor visible (controlled remotely)
             receiverTap?.startSuppressing(virtualStart: .zero, hideCursor: false)
@@ -627,10 +639,10 @@ public final class AppState {
     }
 
     private func sendActivate() {
-        // Normalize Y against the display where the cursor crossed the edge
-        let edgeDisplay = crossingDisplayRect
-        let normY = (crossingPosition.y - edgeDisplay.minY) / edgeDisplay.height
-        print("[App] Sending activate to receiver (normY=\(String(format: "%.3f", normY)), edgeDisplay=\(Int(edgeDisplay.width))x\(Int(edgeDisplay.height)))...")
+        // Normalize Y against entire virtual screen bounds (global) so multi-display mirrors correctly
+        let geo = senderGeometry ?? ScreenGeometry.allDisplays()
+        let normY = (crossingPosition.y - geo.bounds.minY) / geo.bounds.height
+        print("[App] Sending activate to receiver (globalNormY=\(String(format: "%.3f", normY)), crossing display=\(Int(crossingDisplayRect.width))x\(Int(crossingDisplayRect.height)))...")
         let payload = (try? InputShareCodec.encodePayload(ActivatePayload(normalizedPosition: NormalizedPoint(x: 0.0, y: normY)))) ?? Data()
         let env = MessageEnvelope(
             protocolVersion: InputShareCodec.protocolVersion,
@@ -661,9 +673,10 @@ public final class AppState {
     }
 
     private func sendDeactivateOnIncoming() {
-        // Normalize return Y against the display where the left edge was triggered
-        let normY = (crossingPosition.y - crossingDisplayRect.minY) / crossingDisplayRect.height
-        print("[App] Sending deactivate (return) to sender (normY=\(String(format: "%.3f", normY))), restoring local input...")
+        // Normalize return Y against entire virtual screen bounds (global) for multi-display mirroring
+        let geo = receiverGeometry ?? ScreenGeometry.allDisplays()
+        let normY = (crossingPosition.y - geo.bounds.minY) / geo.bounds.height
+        print("[App] Sending deactivate (return) to sender (globalNormY=\(String(format: "%.3f", normY))), restoring local input...")
         receiverTap?.stopSuppressing()
         _receiverProximity = 0
         let payload = (try? InputShareCodec.encodePayload(DeactivatePayload(normalizedY: normY))) ?? Data()

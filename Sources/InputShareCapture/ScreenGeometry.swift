@@ -88,6 +88,26 @@ public struct ScreenGeometry {
         return point.x - display.minX
     }
 
+    /// Returns the display whose right edge is a true screen boundary at the given Y, or nil.
+    public func displayAtRightBoundary(forY y: CGFloat) -> CGRect? {
+        for rect in displayRects {
+            guard y >= rect.minY && y <= rect.maxY else { continue }
+            let probe = CGPoint(x: rect.maxX + 1, y: y)
+            if !displayRects.contains(where: { $0.contains(probe) }) { return rect }
+        }
+        return nil
+    }
+
+    /// Returns the display whose left edge is a true screen boundary at the given Y, or nil.
+    public func displayAtLeftBoundary(forY y: CGFloat) -> CGRect? {
+        for rect in displayRects {
+            guard y >= rect.minY && y <= rect.maxY else { continue }
+            let probe = CGPoint(x: rect.minX - 1, y: y)
+            if !displayRects.contains(where: { $0.contains(probe) }) { return rect }
+        }
+        return nil
+    }
+
     public func normalize(point: CGPoint) -> (x: Double, y: Double) {
         let x = (point.x - bounds.minX) / bounds.width
         let y = (point.y - bounds.minY) / bounds.height
