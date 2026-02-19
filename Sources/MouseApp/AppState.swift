@@ -2,6 +2,7 @@ import Foundation
 import Network
 import Observation
 import ApplicationServices
+import QuartzCore
 import InputShareShared
 import InputShareTransport
 import InputShareCapture
@@ -16,6 +17,19 @@ public enum ConnectionStatus: String {
     case forwarding = "Forwarding"
 }
 
+public enum TransitionMode: String, CaseIterable {
+    case instant   // No lag, minimal visual
+    case elastic   // Slight "tug" at edge before snapping through
+    case smooth    // Motion blur trail connecting screens
+}
+
+public struct TransitionPhysics {
+    public var mode: TransitionMode = .smooth
+    public var springStiffness: CGFloat = 0.85   // 0...1
+    public var blurIntensity: CGFloat = 0.42     // 0...1
+    public var portalFriction: CGFloat = 0.15    // 0...1
+}
+
 @Observable
 public final class AppState {
     public var connectionStatus: ConnectionStatus = .disconnected
@@ -27,9 +41,16 @@ public final class AppState {
     /// Derived: true when cursor is close enough to show portal warning in UI.
     public var isNearEdge: Bool { edgeProximity > 0.05 }
 
-    /// Called on main queue with (proximity, isRightEdge, edgeX) to drive glow panel.
+    public var transitionPhysics = TransitionPhysics()
+    /// Real-time cursor velocity in px/s, exposed for Physics Lab stats display.
+    public var cursorVelocity: CGFloat = 0
+
+    /// Called on main queue with (proximity, isRightEdge, edgeX, velocity) to drive glow panel.
     /// edgeX is the X coordinate of the screen boundary edge (used to find the correct NSScreen).
-    public var onEdgeGlowUpdate: ((_ proximity: CGFloat, _ rightEdge: Bool, _ edgeX: CGFloat) -> Void)?
+    /// velocity is 0...1 normalized edge-ward velocity.
+    public var onEdgeGlowUpdate: ((_ proximity: CGFloat, _ rightEdge: Bool, _ edgeX: CGFloat, _ velocity: CGFloat) -> Void)?
+    /// Called on main queue when transition triggers — drives portal snap flash.
+    public var onPortalSnap: ((_ rightEdge: Bool, _ edgeX: CGFloat) -> Void)?
 
     private let browser = BonjourBrowser()
     private var advertiser: BonjourAdvertiser?
@@ -68,6 +89,15 @@ public final class AppState {
     private var _receiverProximity: CGFloat = 0
     private static let glowZoneFraction: CGFloat = 0.05  // 5% of edge-display width
 
+    // Velocity tracking for predictive glow
+    private var lastMousePosition: CGPoint = .zero
+    private var lastMouseTime: Double = 0
+    private var smoothedVelocity: CGFloat = 0
+
+    // Elastic mode pulsing
+    private var pulseTimer: DispatchSourceTimer?
+    private var pulseStartTime: Double = 0
+
     public init() {
         ensureAccessibility()
     }
@@ -104,9 +134,11 @@ public final class AppState {
         incomingFramed?.cancel()
         incomingFramed = nil
 
-        // Reset edge proximity
+        // Reset edge proximity and velocity
         _senderProximity = 0
         _receiverProximity = 0
+        smoothedVelocity = 0
+        stopPulseTimer()
 
         // Failsafe — ensure HID is re-associated no matter what
         CGAssociateMouseAndMouseCursorPosition(1)
@@ -114,7 +146,8 @@ public final class AppState {
 
         DispatchQueue.main.async {
             self.edgeProximity = 0
-            self.onEdgeGlowUpdate?(0, true, 0)
+            self.cursorVelocity = 0
+            self.onEdgeGlowUpdate?(0, true, 0, 0)
             self.connectionStatus = .disconnected
             self.forwardingState = .idle
             self.pairedDeviceName = nil
@@ -217,6 +250,13 @@ public final class AppState {
                 let startPos = CGPoint(x: geo.bounds.minX, y: self.crossingPosition.y)
                 self.capture?.startSuppressing(virtualStart: startPos)
                 self.startCoalesceTimer()
+                // Portal snap flash on transition
+                if self.transitionPhysics.mode == .smooth || self.transitionPhysics.mode == .elastic {
+                    let edgeX = self.crossingDisplayRect.maxX
+                    DispatchQueue.main.async {
+                        self.onPortalSnap?(true, edgeX)
+                    }
+                }
             } else if newState == .idle {
                 let wasSuppressing = self.capture?.isSuppressing == true
                 self.capture?.stopSuppressing()
@@ -254,8 +294,14 @@ public final class AppState {
         senderGeometry = geometry
         print("[App] Screen bounds (all displays): \(geometry.bounds)")
 
+        let baseDwell: TimeInterval
+        switch transitionPhysics.mode {
+        case .instant: baseDwell = 0.05
+        case .elastic: baseDwell = 0.15 * (1 + Double(transitionPhysics.portalFriction) * 3)
+        case .smooth:  baseDwell = 0.15
+        }
         let edge = EdgeDetector(
-            trigger: EdgeTrigger(zone: .right, dwellTime: 0.1),
+            trigger: EdgeTrigger(zone: .right, dwellTime: baseDwell),
             screenBounds: geometry.bounds,
             displayRects: geometry.displayRects,
             queue: queue
@@ -310,17 +356,32 @@ public final class AppState {
             guard let self else { return }
             self.edgeDetector?.update(position: point)
 
+            // Velocity tracking — rightward speed toward edge
+            let now = CACurrentMediaTime()
+            let dt = now - self.lastMouseTime
+            let dx = point.x - self.lastMousePosition.x
+            let edgeVelocity: CGFloat = dt > 0 ? max(0, dx) / CGFloat(dt) : 0
+            self.smoothedVelocity = 0.7 * self.smoothedVelocity + 0.3 * edgeVelocity
+            self.smoothedVelocity = min(max(self.smoothedVelocity, 0), 5000)
+            self.lastMousePosition = point
+            self.lastMouseTime = now
+            let velocityNorm = min(self.smoothedVelocity / 2000.0, 1.0)
+
             // Progressive edge glow — distance to right boundary of cursor's display
             let suppressing = self.capture?.isSuppressing ?? false
             let cursorDisplay = geometry.displayContaining(point: point)
             let glowZone = cursorDisplay.width * Self.glowZoneFraction
             let dist = suppressing ? CGFloat.infinity : geometry.distanceToRightBoundary(from: point)
             let prox = max(0, min(1, 1 - dist / glowZone))
-            if abs(prox - self._senderProximity) > 0.01 || (prox == 0) != (self._senderProximity == 0) {
-                self._senderProximity = prox
+            // Velocity boost: glow appears earlier and brighter when flicking toward edge
+            let effectiveProx = min(1.0, prox + prox * velocityNorm * 0.5)
+            if abs(effectiveProx - self._senderProximity) > 0.01 || (effectiveProx == 0) != (self._senderProximity == 0) {
+                self._senderProximity = effectiveProx
+                let vel = velocityNorm
                 DispatchQueue.main.async {
-                    self.edgeProximity = prox
-                    self.onEdgeGlowUpdate?(prox, true, cursorDisplay.maxX)
+                    self.edgeProximity = effectiveProx
+                    self.cursorVelocity = self.smoothedVelocity
+                    self.onEdgeGlowUpdate?(effectiveProx, true, cursorDisplay.maxX, vel)
                 }
             }
         }
@@ -542,16 +603,30 @@ public final class AppState {
 
                 returnEdgeDetector?.update(position: receiverCursorPos)
 
+                // Velocity tracking — leftward speed toward edge
+                let now = CACurrentMediaTime()
+                let dt = now - lastMouseTime
+                let leftDx = -(receiverCursorPos.x - lastMousePosition.x)
+                let recvEdgeVelocity: CGFloat = dt > 0 ? max(0, leftDx) / CGFloat(dt) : 0
+                smoothedVelocity = 0.7 * smoothedVelocity + 0.3 * recvEdgeVelocity
+                smoothedVelocity = min(max(smoothedVelocity, 0), 5000)
+                lastMousePosition = receiverCursorPos
+                lastMouseTime = now
+                let recvVelocityNorm = min(smoothedVelocity / 2000.0, 1.0)
+
                 // Progressive edge glow — distance to left boundary of cursor's display
                 let cursorDisplay = geometry.displayContaining(point: receiverCursorPos)
                 let glowZone = cursorDisplay.width * Self.glowZoneFraction
                 let dist = geometry.distanceToLeftBoundary(from: receiverCursorPos)
                 let prox = max(0, min(1, 1 - dist / glowZone))
-                if abs(prox - _receiverProximity) > 0.01 || (prox == 0) != (_receiverProximity == 0) {
-                    _receiverProximity = prox
+                let effectiveProx = min(1.0, prox + prox * recvVelocityNorm * 0.5)
+                if abs(effectiveProx - _receiverProximity) > 0.01 || (effectiveProx == 0) != (_receiverProximity == 0) {
+                    _receiverProximity = effectiveProx
+                    let vel = recvVelocityNorm
                     DispatchQueue.main.async {
-                        self.edgeProximity = prox
-                        self.onEdgeGlowUpdate?(prox, false, cursorDisplay.minX)
+                        self.edgeProximity = effectiveProx
+                        self.cursorVelocity = self.smoothedVelocity
+                        self.onEdgeGlowUpdate?(effectiveProx, false, cursorDisplay.minX, vel)
                     }
                 }
             } else if input.kind == .mouseButton {
@@ -575,7 +650,8 @@ public final class AppState {
             _receiverProximity = 0
             DispatchQueue.main.async {
                 self.edgeProximity = 0
-                self.onEdgeGlowUpdate?(0, false, 0)
+                self.cursorVelocity = 0
+                self.onEdgeGlowUpdate?(0, false, 0, 0)
                 self.connectionStatus = .connected
                 self.forwardingState = .idle
             }
@@ -637,6 +713,13 @@ public final class AppState {
             pendingScroll = nil
             sendInputEvent(pending)
         }
+    }
+
+    // MARK: - Elastic Pulse Timer
+
+    private func stopPulseTimer() {
+        pulseTimer?.cancel()
+        pulseTimer = nil
     }
 
     // MARK: - Message Sending
@@ -711,7 +794,8 @@ public final class AppState {
         }
         DispatchQueue.main.async {
             self.edgeProximity = 0
-            self.onEdgeGlowUpdate?(0, false, 0)
+            self.cursorVelocity = 0
+            self.onEdgeGlowUpdate?(0, false, 0, 0)
             self.connectionStatus = .connected
             self.forwardingState = .idle
         }

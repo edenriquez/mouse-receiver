@@ -7,29 +7,34 @@ private let accentBlue = Color(red: 0.075, green: 0.498, blue: 0.925)
 
 struct PairingView: View {
     let appState: AppState
+    @State private var showPhysicsLab = false
 
     var body: some View {
         VStack(spacing: 0) {
-            headerSection
-            thinDivider
+            if showPhysicsLab {
+                PhysicsLabView(appState: appState, onBack: { showPhysicsLab = false })
+            } else {
+                headerSection
+                thinDivider
 
-            switch appState.connectionStatus {
-            case .disconnected:
-                deviceListSection
-            case .connecting:
-                connectingSection
-            case .connected:
-                if appState.isNearEdge {
-                    portalWarningSection
-                } else {
-                    connectedSection
+                switch appState.connectionStatus {
+                case .disconnected:
+                    deviceListSection
+                case .connecting:
+                    connectingSection
+                case .connected:
+                    if appState.isNearEdge {
+                        portalWarningSection
+                    } else {
+                        connectedSection
+                    }
+                case .forwarding:
+                    forwardingSection
                 }
-            case .forwarding:
-                forwardingSection
-            }
 
-            thinDivider
-            actionSection
+                thinDivider
+                actionSection
+            }
         }
         .frame(width: 260)
         .onAppear { appState.startDiscovery() }
@@ -68,6 +73,13 @@ struct PairingView: View {
             }
 
             Spacer()
+
+            Button(action: { showPhysicsLab.toggle() }) {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
